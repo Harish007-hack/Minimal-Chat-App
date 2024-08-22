@@ -2,6 +2,7 @@ import 'package:chating_app/firebase_options.dart';
 import 'package:chating_app/screens/home_screen.dart';
 import 'package:chating_app/screens/login_screen.dart';
 import 'package:chating_app/services/auth/login_and_register_firebase.dart';
+import 'package:chating_app/services/backend/push_notification_service.dart';
 import 'package:chating_app/services/theme/dark.dart';
 import 'package:chating_app/services/theme/light.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -12,6 +13,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await PushNotificationService().initNotifications();
   runApp(const MyApp());
 }
 

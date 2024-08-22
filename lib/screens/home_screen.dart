@@ -66,89 +66,107 @@ class _HomeScreenState extends State<HomeScreen> {
               stream: _firestore.getUsers(),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  return ListView.builder(
-                    itemCount: snapshot.data!.docs.length,
-                    itemBuilder: (context, index) {
-                      final currentUsermail =
-                          _firebaseLogOrReg.auth.currentUser!.email;
-                      final user = snapshot.data!.docs[index].data();
-                      return (currentUsermail != user['email'] &&
-                              !blockedUserList.contains(user['email']))
-                          ? InkWell(
-                              onLongPress: () => showModalBottomSheet(
-                                // useSafeArea: true,
-                                context: context,
-                                builder: (context) => SafeArea(
-                                  child: Wrap(
-                                    children: [
-                                      ListTile(
-                                        leading: const Icon(Icons.block),
-                                        title: const Text("Block"),
-                                        onTap: () {
-                                          showDialog(
-                                            context: context,
-                                            builder: (context) => AlertDialog(
-                                              content: const Text(
-                                                "Would you like to block this user ?",
-                                                style: TextStyle(fontSize: 20),
-                                              ),
-                                              actions: [
-                                                TextButton(
-                                                  onPressed: () =>
-                                                      Navigator.of(context)
-                                                          .pop(),
-                                                  child: Text(
-                                                    "No",
-                                                    style: TextStyle(
-                                                        color: Theme.of(context)
-                                                            .colorScheme
-                                                            .tertiary),
+                  return snapshot.data!.docs.isEmpty
+                      ? Center(
+                          child: Text(
+                            "No users found",
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.tertiary,
+                              fontSize: 20,
+                            ),
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: snapshot.data!.docs.length,
+                          itemBuilder: (context, index) {
+                            final currentUsermail =
+                                _firebaseLogOrReg.auth.currentUser!.email;
+                            final user = snapshot.data!.docs[index].data();
+                            return (currentUsermail != user['email'] &&
+                                    !blockedUserList.contains(user['email']))
+                                ? InkWell(
+                                    onLongPress: () => showModalBottomSheet(
+                                      // useSafeArea: true,
+                                      context: context,
+                                      builder: (context) => SafeArea(
+                                        child: Wrap(
+                                          children: [
+                                            ListTile(
+                                              leading: const Icon(Icons.block),
+                                              title: const Text("Block"),
+                                              onTap: () {
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (context) =>
+                                                      AlertDialog(
+                                                    content: const Text(
+                                                      "Would you like to block this user ?",
+                                                      style: TextStyle(
+                                                          fontSize: 20),
+                                                    ),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () =>
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop(),
+                                                        child: Text(
+                                                          "No",
+                                                          style: TextStyle(
+                                                              color: Theme.of(
+                                                                      context)
+                                                                  .colorScheme
+                                                                  .tertiary),
+                                                        ),
+                                                      ),
+                                                      TextButton(
+                                                        onPressed: () {
+                                                          _firestore.addToBlockList(
+                                                              _firebaseLogOrReg
+                                                                  .auth
+                                                                  .currentUser!
+                                                                  .uid,
+                                                              user['id'],
+                                                              user);
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                        },
+                                                        child: Text(
+                                                          "Yes",
+                                                          style: TextStyle(
+                                                              color: Theme.of(
+                                                                      context)
+                                                                  .colorScheme
+                                                                  .tertiary),
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
-                                                ),
-                                                TextButton(
-                                                  onPressed: () {
-                                                    _firestore.addToBlockList(
-                                                        _firebaseLogOrReg.auth
-                                                            .currentUser!.uid,
-                                                        user['id'],
-                                                        user);
-                                                    Navigator.of(context).pop();
-                                                  },
-                                                  child: Text(
-                                                    "Yes",
-                                                    style: TextStyle(
-                                                        color: Theme.of(context)
-                                                            .colorScheme
-                                                            .tertiary),
-                                                  ),
-                                                ),
-                                              ],
+                                                );
+                                                // _firestore.addToBlockList(
+                                                //     user['id'], user);
+                                                // Navigator.of(context).pop();
+                                              },
                                             ),
-                                          );
-                                          // _firestore.addToBlockList(
-                                          //     user['id'], user);
-                                          // Navigator.of(context).pop();
-                                        },
+                                            ListTile(
+                                              leading: const Icon(Icons.cancel),
+                                              title: const Text("Cancel"),
+                                              onTap: () =>
+                                                  Navigator.of(context).pop(),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                      ListTile(
-                                        leading: const Icon(Icons.cancel),
-                                        title: const Text("Cancel"),
-                                        onTap: () =>
-                                            Navigator.of(context).pop(),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              onTap: () =>
-                                  chatRoomnav(user['email'], user['id']),
-                              child: ChatUser(
-                                email: user['email'],
-                              ),
-                            )
-                          : const SizedBox();
-                    },
-                  );
+                                    ),
+                                    onTap: () =>
+                                        chatRoomnav(user['email'], user['id']),
+                                    child: ChatUser(
+                                      email: user['email'],
+                                    ),
+                                  )
+                                : const SizedBox();
+                          },
+                        );
                 } else {
                   return const Center(child: CircularProgressIndicator());
                 }

@@ -31,11 +31,17 @@ class _BlockedUserListState extends State<BlockedUserList> {
             .getBlockedUsersStream(_firebaseLogOrReg.auth.currentUser!.uid),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return const Center(child: Text("AN Error has occured"));
+            return Center(
+                child: Text(
+              "AN Error has occured",
+              style: TextStyle(color: Theme.of(context).colorScheme.tertiary),
+            ));
           }
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
+            return Center(
+              child: CircularProgressIndicator(
+                color: Theme.of(context).colorScheme.tertiary,
+              ),
             );
           }
           final userList = snapshot.data!.docs
@@ -43,52 +49,62 @@ class _BlockedUserListState extends State<BlockedUserList> {
                 (e) => e.data(),
               )
               .toList();
-          return ListView.builder(
-            itemCount: userList.length,
-            itemBuilder: (context, index) => ChatUser(
-              email: userList[index]['email'],
-              onLongPress: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    content: const Text(
-                      "Do you want to unblock this user ?",
-                      style: TextStyle(
-                        fontSize: 20,
-                      ),
+          return userList.isEmpty
+              ? Center(
+                  child: Text(
+                    "No Blocked Users",
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.tertiary,
+                      fontSize: 20,
                     ),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: Text(
-                          "No",
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.tertiary,
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: userList.length,
+                  itemBuilder: (context, index) => ChatUser(
+                    email: userList[index]['email'],
+                    onLongPress: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          content: const Text(
+                            "Do you want to unblock this user ?",
+                            style: TextStyle(
+                              fontSize: 20,
+                            ),
                           ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Text(
+                                "No",
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.tertiary,
+                                ),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                _firebase.unBlockingUser(
+                                    _firebaseLogOrReg.auth.currentUser!.uid,
+                                    userList[index]['id']);
+                                Navigator.of(context).pop();
+                              },
+                              child: Text(
+                                "Yes",
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.tertiary,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          _firebase.unBlockingUser(
-                              _firebaseLogOrReg.auth.currentUser!.uid,
-                              userList[index]['id']);
-                          Navigator.of(context).pop();
-                        },
-                        child: Text(
-                          "Yes",
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.tertiary,
-                          ),
-                        ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
                 );
-              },
-            ),
-          );
         },
       ),
     );
